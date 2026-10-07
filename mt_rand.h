@@ -33,10 +33,10 @@
 #ifndef __MERSENNE_TWISTER_MT_RAND_H
 #define __MERSENNE_TWISTER_MT_RAND_H
 
-#include <stddef.h> // size_t
+#include <stddef.h> /* size_t */
 
 /* Period parameters */
-constexpr int MT_RAND_N = 624;
+#define MT_RAND_N 624
 #define M 397
 #define MATRIX_A 0x9908b0dfUL   /* constant vector a */
 #define UPPER_MASK 0x80000000UL /* most significant w-r bits */
@@ -50,16 +50,14 @@ typedef struct {
   int mti;
 } MTRandState;
 
-MTRandState MTRandStateNew();
-
-/* initializes mt[N] with a seed */
-void init_genrand(MTRandState *state, unsigned long s);
+MTRandState MTRandStateNew(void);
 
 /* initialize by an array with array-length */
 /* init_key is the array for initializing keys */
 /* key_length is its length */
 /* slight change for C++, 2004/2/26 */
-void init_by_array(MTRandState *state, unsigned long init_key[], int key_length);
+void init_by_array(MTRandState *state, unsigned long init_key[],
+                   int key_length);
 
 /* generates a random number on [0,0xffffffff]-interval */
 unsigned long genrand_int32(MTRandState *state);

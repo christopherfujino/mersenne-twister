@@ -38,7 +38,8 @@ MTRandState MTRandStateNew() {
   };
 }
 
-void init_genrand(MTRandState *state, unsigned long s) {
+/* initializes mt[N] with a seed */
+static void init_genrand(MTRandState *state, unsigned long s) {
   state->mt[0] = s & 0xffffffffUL;
   for (state->mti = 1; state->mti < MT_RAND_N; state->mti++) {
     state->mt[state->mti] =

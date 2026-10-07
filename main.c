@@ -48,15 +48,15 @@ int main(void)
 {
     int i;
     unsigned long init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
-    auto state = MTRandStateNew();
+    MTRandState state = MTRandStateNew();
     init_by_array(&state, init, length);
-    printf("1000 outputs of genrand_int32()\n");
-    for (i=0; i<1000; i++) {
+    printf("10 outputs of genrand_int32()\n");
+    for (i=0; i<10; i++) {
       printf("%10lu ", genrand_int32(&state));
       if (i%5==4) printf("\n");
     }
-    printf("\n1000 outputs of genrand_real2()\n");
-    for (i=0; i<1000; i++) {
+    printf("\n10 outputs of genrand_real2()\n");
+    for (i=0; i<10; i++) {
       printf("%10.8f ", genrand_real2(&state));
       if (i%5==4) printf("\n");
     }
