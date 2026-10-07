@@ -94,7 +94,7 @@ void init_by_array(MTRandState *state, unsigned long init_key[],
 
 unsigned long genrand_int32(MTRandState *state) {
   unsigned long y;
-  static unsigned long mag01[2] = {0x0UL, MATRIX_A};
+  static unsigned long mag01[2] = {0x0UL, MT_RAND_MATRIX_A};
   /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
   if (state->mti >= MT_RAND_N) { /* generate N words at one time */
@@ -104,17 +104,21 @@ unsigned long genrand_int32(MTRandState *state) {
         MT_RAND_N + 1)             /* if init_genrand() has not been called, */
       init_genrand(state, 5489UL); /* a default initial seed is used */
 
-    for (kk = 0; kk < MT_RAND_N - M; kk++) {
-      y = (state->mt[kk] & UPPER_MASK) | (state->mt[kk + 1] & LOWER_MASK);
-      state->mt[kk] = state->mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+    for (kk = 0; kk < MT_RAND_N - MT_RAND_M; kk++) {
+      y = (state->mt[kk] & MT_RAND_UPPER_MASK) |
+          (state->mt[kk + 1] & MT_RAND_LOWER_MASK);
+      state->mt[kk] = state->mt[kk + MT_RAND_M] ^ (y >> 1) ^ mag01[y & 0x1UL];
     }
     for (; kk < MT_RAND_N - 1; kk++) {
-      y = (state->mt[kk] & UPPER_MASK) | (state->mt[kk + 1] & LOWER_MASK);
+      y = (state->mt[kk] & MT_RAND_UPPER_MASK) |
+          (state->mt[kk + 1] & MT_RAND_LOWER_MASK);
       state->mt[kk] =
-          state->mt[kk + (M - MT_RAND_N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+          state->mt[kk + (MT_RAND_M - MT_RAND_N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
     }
-    y = (state->mt[MT_RAND_N - 1] & UPPER_MASK) | (state->mt[0] & LOWER_MASK);
-    state->mt[MT_RAND_N - 1] = state->mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+    y = (state->mt[MT_RAND_N - 1] & MT_RAND_UPPER_MASK) |
+        (state->mt[0] & MT_RAND_LOWER_MASK);
+    state->mt[MT_RAND_N - 1] =
+        state->mt[MT_RAND_M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
 
     state->mti = 0;
   }

@@ -37,10 +37,10 @@
 
 /* Period parameters */
 #define MT_RAND_N 624
-#define M 397
-#define MATRIX_A 0x9908b0dfUL   /* constant vector a */
-#define UPPER_MASK 0x80000000UL /* most significant w-r bits */
-#define LOWER_MASK 0x7fffffffUL /* least significant r bits */
+#define MT_RAND_M 397
+#define MT_RAND_MATRIX_A 0x9908b0dfUL   /* constant vector a */
+#define MT_RAND_UPPER_MASK 0x80000000UL /* most significant w-r bits */
+#define MT_RAND_LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
 typedef struct {
   /** The array for the state vector. */
