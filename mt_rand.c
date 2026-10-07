@@ -13,15 +13,15 @@
         notice, this list of conditions and the following disclaimer in the
         documentation and/or other materials provided with the distribution.
 
-     3. The names of its contributors may not be used to endorse or promote 
-        products derived from this software without specific prior written 
+     3. The names of its contributors may not be used to endorse or promote
+        products derived from this software without specific prior written
         permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER
+   OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
@@ -32,78 +32,93 @@
 
 #include "mt_rand.h"
 
-void init_genrand(unsigned long s) {
-  mt[0] = s & 0xffffffffUL;
-  for (mti = 1; mti < N; mti++) {
-    mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
+MTRandState MTRandStateNew() {
+  return (MTRandState){
+      .mti = MT_RAND_N + 1,
+  };
+}
+
+void init_genrand(MTRandState *state, unsigned long s) {
+  state->mt[0] = s & 0xffffffffUL;
+  for (state->mti = 1; state->mti < MT_RAND_N; state->mti++) {
+    state->mt[state->mti] =
+        (1812433253UL *
+             (state->mt[state->mti - 1] ^ (state->mt[state->mti - 1] >> 30)) +
+         state->mti);
     /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
     /* In the previous versions, MSBs of the seed affect   */
     /* only MSBs of the array mt[].                        */
     /* 2002/01/09 modified by Makoto Matsumoto             */
-    mt[mti] &= 0xffffffffUL;
+    state->mt[state->mti] &= 0xffffffffUL;
     /* for >32 bit machines */
   }
 }
 
-void init_by_array(unsigned long init_key[], int key_length) {
-  int i, j, k;
-  init_genrand(19650218UL);
-  i = 1;
-  j = 0;
-  k = (N > key_length ? N : key_length);
+void init_by_array(MTRandState *state, unsigned long init_key[],
+                   int key_length) {
+  unsigned int i = 1;
+  int j = 0;
+  int k = (MT_RAND_N > (unsigned int)key_length ? MT_RAND_N : key_length);
+  init_genrand(state, 19650218UL);
   for (; k; k--) {
-    mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1664525UL)) +
-            init_key[j] + j; /* non linear */
-    mt[i] &= 0xffffffffUL;   /* for WORDSIZE > 32 machines */
+    state->mt[i] =
+        (state->mt[i] ^
+         ((state->mt[i - 1] ^ (state->mt[i - 1] >> 30)) * 1664525UL)) +
+        init_key[j] + j;          /* non linear */
+    state->mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
     i++;
     j++;
-    if (i >= N) {
-      mt[0] = mt[N - 1];
+    if (i >= MT_RAND_N) {
+      state->mt[0] = state->mt[MT_RAND_N - 1];
       i = 1;
     }
     if (j >= key_length)
       j = 0;
   }
-  for (k = N - 1; k; k--) {
-    mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1566083941UL)) -
-            i;             /* non linear */
-    mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+  for (k = MT_RAND_N - 1; k; k--) {
+    state->mt[i] =
+        (state->mt[i] ^
+         ((state->mt[i - 1] ^ (state->mt[i - 1] >> 30)) * 1566083941UL)) -
+        i;                        /* non linear */
+    state->mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
     i++;
-    if (i >= N) {
-      mt[0] = mt[N - 1];
+    if (i >= MT_RAND_N) {
+      state->mt[0] = state->mt[MT_RAND_N - 1];
       i = 1;
     }
   }
 
-  mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
+  state->mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
 }
 
-unsigned long genrand_int32(void) {
+unsigned long genrand_int32(MTRandState *state) {
   unsigned long y;
   static unsigned long mag01[2] = {0x0UL, MATRIX_A};
   /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
-  if (mti >= N) { /* generate N words at one time */
+  if (state->mti >= MT_RAND_N) { /* generate N words at one time */
     int kk;
 
-    if (mti == N + 1)       /* if init_genrand() has not been called, */
-      init_genrand(5489UL); /* a default initial seed is used */
+    if (state->mti ==
+        MT_RAND_N + 1)             /* if init_genrand() has not been called, */
+      init_genrand(state, 5489UL); /* a default initial seed is used */
 
-    for (kk = 0; kk < N - M; kk++) {
-      y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-      mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+    for (kk = 0; kk < MT_RAND_N - M; kk++) {
+      y = (state->mt[kk] & UPPER_MASK) | (state->mt[kk + 1] & LOWER_MASK);
+      state->mt[kk] = state->mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
     }
-    for (; kk < N - 1; kk++) {
-      y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-      mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+    for (; kk < MT_RAND_N - 1; kk++) {
+      y = (state->mt[kk] & UPPER_MASK) | (state->mt[kk + 1] & LOWER_MASK);
+      state->mt[kk] =
+          state->mt[kk + (M - MT_RAND_N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
     }
-    y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
-    mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+    y = (state->mt[MT_RAND_N - 1] & UPPER_MASK) | (state->mt[0] & LOWER_MASK);
+    state->mt[MT_RAND_N - 1] = state->mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
 
-    mti = 0;
+    state->mti = 0;
   }
 
-  y = mt[mti++];
+  y = state->mt[state->mti++];
 
   /* Tempering */
   y ^= (y >> 11);
@@ -114,24 +129,26 @@ unsigned long genrand_int32(void) {
   return y;
 }
 
-long genrand_int31(void) { return (long)(genrand_int32() >> 1); }
+long genrand_int31(MTRandState *state) {
+  return (long)(genrand_int32(state) >> 1);
+}
 
-double genrand_real1(void) {
-  return genrand_int32() * (1.0 / 4294967295.0);
+double genrand_real1(MTRandState *state) {
+  return genrand_int32(state) * (1.0 / 4294967295.0);
   /* divided by 2^32-1 */
 }
 
-double genrand_real2(void) {
-  return genrand_int32() * (1.0 / 4294967296.0);
+double genrand_real2(MTRandState *state) {
+  return genrand_int32(state) * (1.0 / 4294967296.0);
   /* divided by 2^32 */
 }
 
-double genrand_real3(void) {
-  return (((double)genrand_int32()) + 0.5) * (1.0 / 4294967296.0);
+double genrand_real3(MTRandState *state) {
+  return (((double)genrand_int32(state)) + 0.5) * (1.0 / 4294967296.0);
   /* divided by 2^32 */
 }
 
-double genrand_res53(void) {
-  unsigned long a = genrand_int32() >> 5, b = genrand_int32() >> 6;
+double genrand_res53(MTRandState *state) {
+  unsigned long a = genrand_int32(state) >> 5, b = genrand_int32(state) >> 6;
   return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
 }

@@ -1,5 +1,5 @@
 CC = bear --append -- clang
-CFLAGS = -Wall -Werror -Wextra -Wpedantic -std=c23
+CFLAGS = -Wall -Werror -Wextra -Wpedantic -std=c23 -g -O0
 
 main.exe: main.o mt_rand.o
   $CC $prereq -o $target

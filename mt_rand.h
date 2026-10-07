@@ -13,15 +13,15 @@
         notice, this list of conditions and the following disclaimer in the
         documentation and/or other materials provided with the distribution.
 
-     3. The names of its contributors may not be used to endorse or promote 
-        products derived from this software without specific prior written 
+     3. The names of its contributors may not be used to endorse or promote
+        products derived from this software without specific prior written
         permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER
+   OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
@@ -33,42 +33,51 @@
 #ifndef __MERSENNE_TWISTER_MT_RAND_H
 #define __MERSENNE_TWISTER_MT_RAND_H
 
+#include <stddef.h> // size_t
+
 /* Period parameters */
-#define N 624
+constexpr int MT_RAND_N = 624;
 #define M 397
 #define MATRIX_A 0x9908b0dfUL   /* constant vector a */
 #define UPPER_MASK 0x80000000UL /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
-static unsigned long mt[N]; /* the array for the state vector  */
-static int mti = N + 1;     /* mti==N+1 means mt[N] is not initialized */
+typedef struct {
+  /** The array for the state vector. */
+  unsigned long mt[MT_RAND_N];
+
+  /** mti==MT_RAND_N+1 means mt[MT_RAND_N] is not initialized */
+  int mti;
+} MTRandState;
+
+MTRandState MTRandStateNew();
 
 /* initializes mt[N] with a seed */
-void init_genrand(unsigned long s);
+void init_genrand(MTRandState *state, unsigned long s);
 
 /* initialize by an array with array-length */
 /* init_key is the array for initializing keys */
 /* key_length is its length */
 /* slight change for C++, 2004/2/26 */
-void init_by_array(unsigned long init_key[], int key_length);
+void init_by_array(MTRandState *state, unsigned long init_key[], int key_length);
 
 /* generates a random number on [0,0xffffffff]-interval */
-unsigned long genrand_int32(void);
+unsigned long genrand_int32(MTRandState *state);
 
 /* generates a random number on [0,0x7fffffff]-interval */
-long genrand_int31(void);
+long genrand_int31(MTRandState *state);
 
 /* generates a random number on [0,1]-real-interval */
-double genrand_real1(void);
+double genrand_real1(MTRandState *state);
 
 /* generates a random number on [0,1)-real-interval */
-double genrand_real2(void);
+double genrand_real2(MTRandState *state);
 
 /* generates a random number on (0,1)-real-interval */
-double genrand_real3(void);
+double genrand_real3(MTRandState *state);
 
 /* generates a random number on [0,1) with 53-bit resolution*/
-double genrand_res53(void);
+double genrand_res53(MTRandState *state);
 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 
