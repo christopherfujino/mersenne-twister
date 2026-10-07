@@ -48,8 +48,7 @@ int main(void)
 {
     int i;
     unsigned long init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
-    MTRandState state = MTRandStateNew();
-    init_by_array(&state, init, length);
+    MTRandState state = MTRandStateNew(init, length);
     printf("10 outputs of genrand_int32()\n");
     for (i=0; i<10; i++) {
       printf("%10lu ", genrand_int32(&state));

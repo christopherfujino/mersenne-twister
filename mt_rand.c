@@ -30,13 +30,14 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <stdint.h> /* uint32_t */
 #include "mt_rand.h"
 
-MTRandState MTRandStateNew() {
-  return (MTRandState){
-      .mti = MT_RAND_N + 1,
-  };
-}
+/* Period parameters */
+#define MT_RAND_M 397
+#define MT_RAND_MATRIX_A 0x9908b0dfUL   /* constant vector a */
+#define MT_RAND_UPPER_MASK 0x80000000UL /* most significant w-r bits */
+#define MT_RAND_LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
 /* initializes mt[N] with a seed */
 static void init_genrand(MTRandState *state, unsigned long s) {
@@ -55,44 +56,52 @@ static void init_genrand(MTRandState *state, unsigned long s) {
   }
 }
 
-void init_by_array(MTRandState *state, unsigned long init_key[],
-                   int key_length) {
+/* initialize by an array with array-length */
+/* init_key is the array for initializing keys */
+/* key_length is its length */
+/* slight change for C++, 2004/2/26 */
+MTRandState MTRandStateNew(unsigned long init_key[], int key_length) {
+  auto state = (MTRandState){
+      .mti = MT_RAND_N + 1,
+  };
+
   unsigned int i = 1;
   int j = 0;
   int k = (MT_RAND_N > (unsigned int)key_length ? MT_RAND_N : key_length);
-  init_genrand(state, 19650218UL);
+  init_genrand(&state, 19650218UL);
   for (; k; k--) {
-    state->mt[i] =
-        (state->mt[i] ^
-         ((state->mt[i - 1] ^ (state->mt[i - 1] >> 30)) * 1664525UL)) +
+    state.mt[i] =
+        (state.mt[i] ^
+         ((state.mt[i - 1] ^ (state.mt[i - 1] >> 30)) * 1664525UL)) +
         init_key[j] + j;          /* non linear */
-    state->mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+    state.mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
     i++;
     j++;
     if (i >= MT_RAND_N) {
-      state->mt[0] = state->mt[MT_RAND_N - 1];
+      state.mt[0] = state.mt[MT_RAND_N - 1];
       i = 1;
     }
     if (j >= key_length)
       j = 0;
   }
   for (k = MT_RAND_N - 1; k; k--) {
-    state->mt[i] =
-        (state->mt[i] ^
-         ((state->mt[i - 1] ^ (state->mt[i - 1] >> 30)) * 1566083941UL)) -
+    state.mt[i] =
+        (state.mt[i] ^
+         ((state.mt[i - 1] ^ (state.mt[i - 1] >> 30)) * 1566083941UL)) -
         i;                        /* non linear */
-    state->mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+    state.mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
     i++;
     if (i >= MT_RAND_N) {
-      state->mt[0] = state->mt[MT_RAND_N - 1];
+      state.mt[0] = state.mt[MT_RAND_N - 1];
       i = 1;
     }
   }
 
-  state->mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
+  state.mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
+  return state;
 }
 
-unsigned long genrand_int32(MTRandState *state) {
+uint32_t genrand_int32(MTRandState *state) {
   unsigned long y;
   static unsigned long mag01[2] = {0x0UL, MT_RAND_MATRIX_A};
   /* mag01[x] = x * MATRIX_A  for x=0,1 */
@@ -134,7 +143,7 @@ unsigned long genrand_int32(MTRandState *state) {
   return y;
 }
 
-long genrand_int31(MTRandState *state) {
+int32_t genrand_int31(MTRandState *state) {
   return (long)(genrand_int32(state) >> 1);
 }
 
