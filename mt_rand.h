@@ -49,22 +49,22 @@ typedef struct {
 MTRandState MTRandStateNew(unsigned long init_key[], int key_length);
 
 /* generates a random number on [0,0xffffffff]-interval */
-uint32_t genrand_int32(MTRandState *state);
+uint32_t MTRandInt32(MTRandState *state);
 
 /* generates a random number on [0,0x7fffffff]-interval */
-int32_t genrand_int31(MTRandState *state);
+int32_t MTRandInt31(MTRandState *state);
 
 /* generates a random number on [0,1]-real-interval */
-double genrand_real1(MTRandState *state);
+double MTRandReal1(MTRandState *state);
 
 /* generates a random number on [0,1)-real-interval */
-double genrand_real2(MTRandState *state);
+double MTRandReal2(MTRandState *state);
 
 /* generates a random number on (0,1)-real-interval */
-double genrand_real3(MTRandState *state);
+double MTRandReal3(MTRandState *state);
 
 /* generates a random number on [0,1) with 53-bit resolution*/
-double genrand_res53(MTRandState *state);
+double MTRandResolution53(MTRandState *state);
 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 

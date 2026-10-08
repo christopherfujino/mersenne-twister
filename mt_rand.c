@@ -101,7 +101,7 @@ MTRandState MTRandStateNew(unsigned long init_key[], int key_length) {
   return state;
 }
 
-uint32_t genrand_int32(MTRandState *state) {
+uint32_t MTRandInt32(MTRandState *state) {
   unsigned long y;
   static unsigned long mag01[2] = {0x0UL, MT_RAND_MATRIX_A};
   /* mag01[x] = x * MATRIX_A  for x=0,1 */
@@ -143,26 +143,26 @@ uint32_t genrand_int32(MTRandState *state) {
   return y;
 }
 
-int32_t genrand_int31(MTRandState *state) {
-  return (long)(genrand_int32(state) >> 1);
+int32_t MTRandInt31(MTRandState *state) {
+  return (long)(MTRandInt32(state) >> 1);
 }
 
-double genrand_real1(MTRandState *state) {
-  return genrand_int32(state) * (1.0 / 4294967295.0);
+double MTRandReal1(MTRandState *state) {
+  return MTRandInt32(state) * (1.0 / 4294967295.0);
   /* divided by 2^32-1 */
 }
 
-double genrand_real2(MTRandState *state) {
-  return genrand_int32(state) * (1.0 / 4294967296.0);
+double MTRandReal2(MTRandState *state) {
+  return MTRandInt32(state) * (1.0 / 4294967296.0);
   /* divided by 2^32 */
 }
 
-double genrand_real3(MTRandState *state) {
-  return (((double)genrand_int32(state)) + 0.5) * (1.0 / 4294967296.0);
+double MTRandReal3(MTRandState *state) {
+  return (((double)MTRandInt32(state)) + 0.5) * (1.0 / 4294967296.0);
   /* divided by 2^32 */
 }
 
-double genrand_res53(MTRandState *state) {
-  unsigned long a = genrand_int32(state) >> 5, b = genrand_int32(state) >> 6;
+double MTRandResolution53(MTRandState *state) {
+  unsigned long a = MTRandInt32(state) >> 5, b = MTRandInt32(state) >> 6;
   return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
 }
